@@ -2,7 +2,7 @@
 
 # Buzz
 
-Voice file generator.
+Speech file generator.
 
 ## Version
 
