@@ -1,2 +1,2 @@
-python ../CODE/buzz.py google.csv GOOGLE/ 1
+python ../CODE/buzz.py google.csv GOOGLE/ google 1
 pause

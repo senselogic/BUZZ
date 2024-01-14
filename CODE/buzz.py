@@ -5,173 +5,166 @@ import os;
 import pyttsx3;
 import sys;
 import time;
-from gtts import gTTS, lang
-from google.cloud import texttospeech
+from gtts import gTTS, lang;
+from google.cloud import texttospeech;
 
 ## -- FUNCTIONS
 
 def GetLogicalPath( path ) :
 
-    return path.replace( '\\', '/' )
+    return path.replace( '\\', '/' );
 
 ##
 
 def WriteMicrosoftSpeechFile( text, voice_name, speech_file_path, pause_duration ) :
 
-    try :
+    engine = pyttsx3.init();
+    microsoft_voice_list = engine.getProperty( 'voices' );
 
-        engine = pyttsx3.init()
-        microsoft_voice_list = engine.getProperty( 'voices' )
+    for microsoft_voice in microsoft_voice_list :
 
-        for microsoft_voice in microsoft_voice_list :
+        if voice_name in microsoft_voice.name :
 
-            if voice_name in microsoft_voice.name :
+            engine.setProperty( 'voice', microsoft_voice.id );
+            engine.save_to_file( text, speech_file_path );
+            engine.runAndWait();
+            time.sleep( pause_duration );
 
-                engine.setProperty( 'voice', microsoft_voice.id )
-                engine.save_to_file( text, speech_file_path )
-                engine.runAndWait()
-                time.sleep( pause_duration )
+            return
 
-                return
+    print( f"*** Voice not found : { voice_name }" )
 
-        print( f"*** Voice not found : { voice_name }" )
+    for microsoft_voice in microsoft_voice_list :
 
-        for microsoft_voice in microsoft_voice_list :
-
-            print( f"Microsoft speech voice : { microsoft_voice.name }" )
-
-    except Exception as exception :
-
-        print( f"*** { exception }" )
-
-        return
+        print( f"Available voice : { microsoft_voice.name }" );
 
 ##
 
 def WriteGoogleSpeechFile( text, language_code, speech_file_path, pause_duration ) :
 
-    try :
+    google_language_name_by_code_map = lang.tts_langs().items();
 
-        google_language_name_by_code_map = lang.tts_langs().items()
+    for google_language_code, language_name in google_language_name_by_code_map :
 
-        for google_language_code, language_name in google_language_name_by_code_map :
+        if language_code.startswith( google_language_code ) :
 
-            if language_code.startswith( google_language_code ) :
+            speech = gTTS( text, lang = language_code, slow = False );
+            speech.save( speech_file_path );
+            time.sleep( pause_duration );
 
-                speech = gTTS( text, lang = language_code, slow = False )
-                speech.save( speech_file_path )
-                time.sleep( pause_duration )
+            return;
 
-                return
+    print( f"*** Language code not found : { language_code }" );
 
-        print( f"*** Language code not found : { language_code }" );
+    for google_language_code, google_language_name in google_language_name_by_code_map :
 
-        for google_language_code, google_language_name in google_language_name_by_code_map :
-
-            print( f"Google speech language : { google_language_code } { google_language_name }" )
-
-    except Exception as exception :
-
-        print( f"*** { exception }" )
-
-        return
+        print( f"Available language : { google_language_code } { google_language_name }" );
 
 ##
 
 def WriteGoogleApiSpeechFile( text, language_code, voice_name, speech_file_path, pause_duration ) :
 
-    text_to_speech_client = texttospeech.TextToSpeechClient()
-    synthesis_input = texttospeech.SynthesisInput(text=text)
+    if ( "GOOGLE_API_KEY" in os.environ
+         or "GOOGLE_APPLICATION_CREDENTIALS" in os.environ ) :
 
-    voice = (
-        texttospeech.VoiceSelectionParams(
-            language_code = language_code,
-            name = voice_name
-            )
-        )
+        text_to_speech_client = texttospeech.TextToSpeechClient();
+        synthesis_input = texttospeech.SynthesisInput( text = text );
 
-    audio_configuration = (
-        texttospeech.AudioConfig(
-            audio_encoding=texttospeech.AudioEncoding.MP3
-            )
-        )
-
-    try :
-
+        voice = (
+            texttospeech.VoiceSelectionParams(
+                language_code = language_code,
+                name = voice_name
+                )
+            );
+        audio_configuration = (
+            texttospeech.AudioConfig(
+                audio_encoding=texttospeech.AudioEncoding.MP3
+                )
+            );
         response = (
             text_to_speech_client.synthesize_speech(
                 input = synthesis_input,
                 voice = voice,
                 audio_config = audio_configuration
                 )
-            )
+            );
 
         with open( speech_file_path, 'wb' ) as speech_file :
 
-            speech_file.write( response.audio_content )
+            speech_file.write( response.audio_content );
 
-        time.sleep( pause_duration )
+        time.sleep( pause_duration );
+
+    else :
+
+        print( f"*** Missing environment variable : GOOGLE_API_KEY or GOOGLE_APPLICATION_CREDENTIALS" );
+        sys.exit( 0 );
+
+##
+
+def ReadTextFile( text_file_path, speech_folder_path, speech_engine_name, pause_duration ) :
+
+    try :
+
+        print( f"Reading file : { text_file_path }" );
+
+        with open( text_file_path, newline = '', encoding = 'utf-8' ) as csv_file :
+
+            csv_reader = csv.reader( csv_file );
+            next( csv_reader );
+
+            for row in csv_reader :
+
+                language_code, voice_name, speech_file_name, text = row;
+                speech_file_path = speech_folder_path + speech_file_name;
+                print( f"Saying text  : [{ language_code }] { text }" );
+
+                if os.path.exists( speech_file_path ) :
+
+                    print( f"Keeping file : { speech_file_path }" );
+
+                else :
+
+                    print( f"Writing file : { speech_file_path }" );
+
+                    if speech_engine_name == "microsoft" :
+
+                        WriteMicrosoftSpeechFile( text, voice_name, speech_file_path, pause_duration );
+
+                    if speech_engine_name == "google" :
+
+                        WriteGoogleSpeechFile( text, language_code, speech_file_path, pause_duration );
+
+                    if speech_engine_name == "google-api" :
+
+                        WriteGoogleApiSpeechFile( text, language_code, voice_name, speech_file_path, pause_duration );
 
     except Exception as exception :
 
-        print( f"*** { exception }" )
-
-        return
-##
-
-def ReadTextFile( text_file_path, speech_folder_path, pause_duration ) :
-
-    print( f"Reading file : { text_file_path }" )
-
-    with open( text_file_path, newline = '', encoding = 'utf-8' ) as csv_file :
-
-        csv_reader = csv.reader( csv_file )
-        next( csv_reader )
-
-        for row in csv_reader :
-
-            language_code, engine_name, voice_name, speech_file_name, text = row
-            speech_file_path = speech_folder_path + speech_file_name
-
-            print( f"Saying text  : [{ language_code }] { text }" )
-
-            if os.path.exists( speech_file_path ) :
-
-                print( f"Keeping file : { speech_file_path }" )
-
-            else :
-
-                print( f"Writing file : { speech_file_path }" )
-
-                if engine_name == "Microsoft" :
-
-                    WriteMicrosoftSpeechFile( text, voice_name, speech_file_path, pause_duration )
-
-                if engine_name == "Google" :
-
-                    WriteGoogleSpeechFile( text, language_code, speech_file_path, pause_duration )
-
-                if engine_name == "GoogleApi" :
-
-                    WriteGoogleCloudSpeechFile( text, language_code, voice_name, speech_file_path, pause_duration )
+        print( f"*** { exception }" );
 
 ## -- STATEMENTS
 
-if __name__ == "__main__":
+if ( __name__ == "__main__" ) :
 
     argument_list = sys.argv;
+    argument_count = len( argument_list ) - 1;
 
-    if len( argument_list ) == 4 :
+    if ( argument_count == 4 ) :
 
-        text_file_path = GetLogicalPath( argument_list[ 1 ] )
-        speech_folder_path = GetLogicalPath( argument_list[ 2 ] )
-        pause_duration = float( argument_list[ 3 ] )
+        text_file_path = GetLogicalPath( argument_list[ 1 ] );
+        speech_folder_path = GetLogicalPath( argument_list[ 2 ] );
+        speech_engine_name = argument_list[ 3 ];
+        pause_duration = float( argument_list[ 4 ] );
 
-        if text_file_path.endswith( ".csv" ) and speech_folder_path.endswith( "/" ) :
+        if ( text_file_path.endswith( ".csv" )
+             and speech_folder_path.endswith( "/" )
+             and ( speech_engine_name == "microsoft"
+                   or speech_engine_name == "google"
+                   or speech_engine_name == "google-api" ) ) :
 
-            ReadTextFile( text_file_path, speech_folder_path, pause_duration )
+            ReadTextFile( text_file_path, speech_folder_path, speech_engine_name, pause_duration );
+            sys.exit( 0 );
 
-            sys.exit( 0 )
-
-    print( f"*** Invalid arguments : { argument_list }" )
-    print( "Usage: python buzz.py text_file.csv SPEECH_FOLDER/" )
+    print( f"*** Invalid arguments : { argument_list }" );
+    print( "Usage: python buzz.py text_file.csv SPEECH_FOLDER/" );
