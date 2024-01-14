@@ -1,12 +1,12 @@
 ## -- IMPORTS
 
 import csv;
+from google.cloud import texttospeech;
+from gtts import gTTS, lang;
 import os;
 import pyttsx3;
 import sys;
 import time;
-from gtts import gTTS, lang;
-from google.cloud import texttospeech;
 
 ## -- FUNCTIONS
 
@@ -19,9 +19,9 @@ def GetLogicalPath( path ) :
 def WriteMicrosoftSpeechFile( text, voice_name, speech_file_path, pause_duration ) :
 
     engine = pyttsx3.init();
-    microsoft_voice_list = engine.getProperty( 'voices' );
+    microsoft_voice_array = engine.getProperty( 'voices' );
 
-    for microsoft_voice in microsoft_voice_list :
+    for microsoft_voice in microsoft_voice_array :
 
         if voice_name in microsoft_voice.name :
 
@@ -34,7 +34,7 @@ def WriteMicrosoftSpeechFile( text, voice_name, speech_file_path, pause_duration
 
     print( f"*** Voice not found : { voice_name }" )
 
-    for microsoft_voice in microsoft_voice_list :
+    for microsoft_voice in microsoft_voice_array :
 
         print( f"Available voice : { microsoft_voice.name }" );
 
@@ -147,15 +147,15 @@ def ReadTextFile( text_file_path, speech_folder_path, speech_engine_name, pause_
 
 if ( __name__ == "__main__" ) :
 
-    argument_list = sys.argv;
-    argument_count = len( argument_list ) - 1;
+    argument_array = sys.argv;
+    argument_count = len( argument_array ) - 1;
 
     if ( argument_count == 4 ) :
 
-        text_file_path = GetLogicalPath( argument_list[ 1 ] );
-        speech_folder_path = GetLogicalPath( argument_list[ 2 ] );
-        speech_engine_name = argument_list[ 3 ];
-        pause_duration = float( argument_list[ 4 ] );
+        text_file_path = GetLogicalPath( argument_array[ 1 ] );
+        speech_folder_path = GetLogicalPath( argument_array[ 2 ] );
+        speech_engine_name = argument_array[ 3 ];
+        pause_duration = float( argument_array[ 4 ] );
 
         if ( text_file_path.endswith( ".csv" )
              and speech_folder_path.endswith( "/" )
@@ -166,5 +166,5 @@ if ( __name__ == "__main__" ) :
             ReadTextFile( text_file_path, speech_folder_path, speech_engine_name, pause_duration );
             sys.exit( 0 );
 
-    print( f"*** Invalid arguments : { argument_list }" );
+    print( f"*** Invalid arguments : { argument_array }" );
     print( "Usage: python buzz.py text_file.csv SPEECH_FOLDER/" );
