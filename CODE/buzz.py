@@ -102,30 +102,30 @@ def WriteGoogleApiSpeechFile( text, language_code, voice_name, speech_file_path,
 
 ##
 
-def ReadTextFile( text_file_path, speech_folder_path, speech_engine_name, pause_duration ) :
+def ReadTextFile( data_file_path, speech_folder_path, speech_engine_name, pause_duration ) :
 
     try :
 
-        print( f"Reading file : { text_file_path }" );
+        print( "Reading CSV data :", data_file_path );
 
-        with open( text_file_path, newline = '', encoding = 'utf-8' ) as csv_file :
+        with open( data_file_path, newline = '', encoding = 'utf-8' ) as data_file :
 
-            csv_reader = csv.reader( csv_file );
+            csv_reader = csv.reader( data_file );
             next( csv_reader );
 
             for row in csv_reader :
 
                 language_code, voice_name, speech_file_name, text = row;
                 speech_file_path = speech_folder_path + speech_file_name;
-                print( f"Saying text  : [{ language_code }] { text }" );
+                print( f"Generated text speech : [{ language_code }] { text }" );
 
                 if os.path.exists( speech_file_path ) :
 
-                    print( f"Keeping file : { speech_file_path }" );
+                    print( "Keeping speech file :", speech_file_path );
 
                 else :
 
-                    print( f"Writing file : { speech_file_path }" );
+                    print( "Writing speech file :", speech_file_path );
 
                     if speech_engine_name == "microsoft" :
 
@@ -145,26 +145,24 @@ def ReadTextFile( text_file_path, speech_folder_path, speech_engine_name, pause_
 
 ## -- STATEMENTS
 
-if ( __name__ == "__main__" ) :
+argument_array = sys.argv;
+argument_count = len( argument_array ) - 1;
 
-    argument_array = sys.argv;
-    argument_count = len( argument_array ) - 1;
+if ( argument_count == 4 ) :
 
-    if ( argument_count == 4 ) :
+    data_file_path = GetLogicalPath( argument_array[ 1 ] );
+    speech_folder_path = GetLogicalPath( argument_array[ 2 ] );
+    speech_engine_name = argument_array[ 3 ];
+    pause_duration = float( argument_array[ 4 ] );
 
-        text_file_path = GetLogicalPath( argument_array[ 1 ] );
-        speech_folder_path = GetLogicalPath( argument_array[ 2 ] );
-        speech_engine_name = argument_array[ 3 ];
-        pause_duration = float( argument_array[ 4 ] );
+    if ( data_file_path.endswith( ".csv" )
+         and speech_folder_path.endswith( "/" )
+         and ( speech_engine_name == "microsoft"
+               or speech_engine_name == "google"
+               or speech_engine_name == "google-api" ) ) :
 
-        if ( text_file_path.endswith( ".csv" )
-             and speech_folder_path.endswith( "/" )
-             and ( speech_engine_name == "microsoft"
-                   or speech_engine_name == "google"
-                   or speech_engine_name == "google-api" ) ) :
+        ReadTextFile( data_file_path, speech_folder_path, speech_engine_name, pause_duration );
+        sys.exit( 0 );
 
-            ReadTextFile( text_file_path, speech_folder_path, speech_engine_name, pause_duration );
-            sys.exit( 0 );
-
-    print( f"*** Invalid arguments : { argument_array }" );
-    print( "Usage: python buzz.py text_file.csv SPEECH_FOLDER/" );
+print( f"*** Invalid arguments : { argument_array }" );
+print( "Usage: python buzz.py data.csv SPEECH_FOLDER/" );
