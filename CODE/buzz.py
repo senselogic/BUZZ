@@ -106,9 +106,9 @@ def ReadTextFile( data_file_path, speech_folder_path, speech_engine_name, pause_
 
     try :
 
-        print( "Reading CSV data :", data_file_path );
+        print( "Reading data :", data_file_path );
 
-        with open( data_file_path, newline = '', encoding = 'utf-8' ) as data_file :
+        with open( data_file_path, newline = "", encoding = "utf-8" ) as data_file :
 
             csv_reader = csv.reader( data_file );
             next( csv_reader );
@@ -121,11 +121,11 @@ def ReadTextFile( data_file_path, speech_folder_path, speech_engine_name, pause_
 
                 if os.path.exists( speech_file_path ) :
 
-                    print( "Keeping speech file :", speech_file_path );
+                    print( "Keeping speech :", speech_file_path );
 
                 else :
 
-                    print( "Writing speech file :", speech_file_path );
+                    print( "Writing speech :", speech_file_path );
 
                     if speech_engine_name == "microsoft" :
 
