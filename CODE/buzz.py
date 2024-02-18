@@ -253,8 +253,6 @@ def WriteMmsSpeechFiles( data_frame, speech_folder_path ) :
 
 def WriteXttsSpeechFiles( data_frame, speech_folder_path ) :
 
-    data_frame = data_frame.copy().sort_values( by = "language_code", ascending = True )
-
     try :
 
         model = TTS( "tts_models/multilingual/multi-dataset/xtts_v2" );
