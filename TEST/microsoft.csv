@@ -1,4 +1,4 @@
-Language code,Voice name,Speech file name,Text
+language_code,voice_name,speech_file_name,text
 en-US,David,it_snowed_rained_and_hailed_the_same_morning_en.mp3,"It snowed, rained, and hailed the same morning."
 fr-FR,Hortense,it_snowed_rained_and_hailed_the_same_morning_fr.mp3,"Il a neigé, plu et grêlé le même matin."
 es-ES,Helena,it_snowed_rained_and_hailed_the_same_morning_es.mp3,"Nevó, llovió y granizó la misma mañana."

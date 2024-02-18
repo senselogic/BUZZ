@@ -6,7 +6,7 @@ Speech file generator.
 
 ## Version
 
-0.0.0-dev
+0.1
 
 ## Author
 
