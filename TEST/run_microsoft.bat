@@ -1,2 +1,2 @@
-python ../CODE/buzz.py microsoft.csv MICROSOFT/ microsoft 0
+python ../CODE/buzz.py microsoft.csv MICROSOFT/ microsoft
 pause

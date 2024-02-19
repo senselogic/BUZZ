@@ -31,52 +31,52 @@ def GetThreeLetterLanguageCode( language_code ) :
 
     return (
         {
-            'ar': 'ara',    # Arabic
-            'bg': 'bul',    # Bulgarian
-            'bn': 'ben',    # Bengali
-            'cs': 'ces',    # Czech
-            'da': 'dan',    # Danish
-            'de': 'deu',    # German
-            'el': 'ell',    # Greek
-            'en': 'eng',    # English
-            'es': 'spa',    # Spanish
-            'et': 'est',    # Estonian
-            'fa': 'fas',    # Persian
-            'fi': 'fin',    # Finnish
-            'fr': 'fra',    # French
-            'he': 'heb',    # Hebrew
-            'hi': 'hin',    # Hindi
-            'hr': 'hrv',    # Croatian
-            'hu': 'hun',    # Hungarian
-            'id': 'ind',    # Indonesian
-            'it': 'ita',    # Italian
-            'ja': 'jpn',    # Japanese
-            'ko': 'kor',    # Korean
-            'lt': 'lit',    # Lithuanian
-            'lv': 'lav',    # Latvian
-            'ms': 'msa',    # Malay
-            'nb': 'nob',    # Norwegian Bokmål
-            'nl': 'nld',    # Dutch
-            'pl': 'pol',    # Polish
-            'pt': 'por',    # Portuguese
-            'ro': 'ron',    # Romanian
-            'ru': 'rus',    # Russian
-            'sk': 'slk',    # Slovak
-            'sl': 'slv',    # Slovenian
-            'sr': 'srp',    # Serbian
-            'sv': 'swe',    # Swedish
-            'ta': 'tam',    # Tamil
-            'th': 'tha',    # Thai
-            'tr': 'tur',    # Turkish
-            'uk': 'ukr',    # Ukrainian
-            'vi': 'vie',    # Vietnamese
-            'zh': 'zho',    # Chinese
+            'ar' : 'ara',    # Arabic
+            'bg' : 'bul',    # Bulgarian
+            'bn' : 'ben',    # Bengali
+            'cs' : 'ces',    # Czech
+            'da' : 'dan',    # Danish
+            'de' : 'deu',    # German
+            'el' : 'ell',    # Greek
+            'en' : 'eng',    # English
+            'es' : 'spa',    # Spanish
+            'et' : 'est',    # Estonian
+            'fa' : 'fas',    # Persian
+            'fi' : 'fin',    # Finnish
+            'fr' : 'fra',    # French
+            'he' : 'heb',    # Hebrew
+            'hi' : 'hin',    # Hindi
+            'hr' : 'hrv',    # Croatian
+            'hu' : 'hun',    # Hungarian
+            'id' : 'ind',    # Indonesian
+            'it' : 'ita',    # Italian
+            'ja' : 'jpn',    # Japanese
+            'ko' : 'kor',    # Korean
+            'lt' : 'lit',    # Lithuanian
+            'lv' : 'lav',    # Latvian
+            'ms' : 'msa',    # Malay
+            'nb' : 'nob',    # Norwegian Bokmål
+            'nl' : 'nld',    # Dutch
+            'pl' : 'pol',    # Polish
+            'pt' : 'por',    # Portuguese
+            'ro' : 'ron',    # Romanian
+            'ru' : 'rus',    # Russian
+            'sk' : 'slk',    # Slovak
+            'sl' : 'slv',    # Slovenian
+            'sr' : 'srp',    # Serbian
+            'sv' : 'swe',    # Swedish
+            'ta' : 'tam',    # Tamil
+            'th' : 'tha',    # Thai
+            'tr' : 'tur',    # Turkish
+            'uk' : 'ukr',    # Ukrainian
+            'vi' : 'vie',    # Vietnamese
+            'zh' : 'zho'     # Chinese
         }
         ).get( GetTwoLetterLanguageCode( language_code ), "" );
 
 ##
 
-def WriteMicrosoftSpeechFile( text, voice_name, speech_file_path, pause_duration ) :
+def GenerateMicrosoftSpeechFile( text, voice_name, speech_file_path, pause_duration ) :
 
     engine = pyttsx3.init();
     microsoft_voice_array = engine.getProperty( 'voices' );
@@ -100,7 +100,7 @@ def WriteMicrosoftSpeechFile( text, voice_name, speech_file_path, pause_duration
 
 ##
 
-def WriteGoogleSpeechFile( text, language_code, speech_file_path, pause_duration ) :
+def GenerateGoogleSpeechFile( text, language_code, speech_file_path, pause_duration ) :
 
     google_language_name_by_code_map = lang.tts_langs().items();
 
@@ -122,7 +122,7 @@ def WriteGoogleSpeechFile( text, language_code, speech_file_path, pause_duration
 
 ##
 
-def WriteGoogleApiSpeechFile( text, language_code, voice_name, speech_file_path, pause_duration ) :
+def GenerateGoogleApiSpeechFile( text, language_code, voice_name, speech_file_path, pause_duration ) :
 
     if ( "GOOGLE_API_KEY" in os.environ
          or "GOOGLE_APPLICATION_CREDENTIALS" in os.environ ) :
@@ -164,131 +164,113 @@ def WriteGoogleApiSpeechFile( text, language_code, voice_name, speech_file_path,
 
 ##
 
-def WriteApiSpeechFiles( data_frame, speech_folder_path, speech_engine_name, pause_duration ) :
+def GenerateApiSpeechFiles( data_frame, speech_folder_path, speech_engine_name, pause_duration ) :
 
-    try :
+    for _, row in data_frame.iterrows() :
 
-        for _, row in data_frame.iterrows() :
+        language_code = row[ "language_code" ];
+        text = row[ "text" ];
+        speech_file_path = speech_folder_path + row[ "speech_file_name" ];
 
-            language_code = row[ "language_code" ];
-            text = row[ "text" ];
-            speech_file_path = speech_folder_path + row[ "speech_file_name" ];
+        print( f"Generated text speech : [{ language_code }] { text }" );
 
-            print( f"Generated text speech : [{ language_code }] { text }" );
+        if os.path.exists( speech_file_path ) :
 
-            if os.path.exists( speech_file_path ) :
+            print( "Keeping speech :", speech_file_path );
 
-                print( "Keeping speech :", speech_file_path );
+        else :
 
-            else :
+            print( "Writing speech :", speech_file_path );
 
-                print( "Writing speech :", speech_file_path );
+            if speech_engine_name == "microsoft" :
 
-                if speech_engine_name == "microsoft" :
+                GenerateMicrosoftSpeechFile( text, row[ "voice_name" ], speech_file_path, pause_duration );
 
-                    WriteMicrosoftSpeechFile( text, row[ "voice_name" ], speech_file_path, pause_duration );
+            elif speech_engine_name == "google" :
 
-                elif speech_engine_name == "google" :
+                GenerateGoogleSpeechFile( text, language_code, speech_file_path, pause_duration );
 
-                    WriteGoogleSpeechFile( text, language_code, speech_file_path, pause_duration );
+            elif speech_engine_name == "google-api" :
 
-                elif speech_engine_name == "google-api" :
-
-                    WriteGoogleApiSpeechFile( text, language_code, row[ "voice_name" ], speech_file_path, pause_duration );
-
-    except Exception as exception :
-
-        print( f"*** { exception }" );
+                GenerateGoogleApiSpeechFile( text, language_code, row[ "voice_name" ], speech_file_path, pause_duration );
 
 ##
 
-def WriteMmsSpeechFiles( data_frame, speech_folder_path ) :
+def GenerateMmsSpeechFiles( data_frame, speech_folder_path ) :
 
     data_frame = data_frame.copy().sort_values( by = "language_code", ascending = True )
 
     prior_language_code = "";
 
-    try :
+    for _, row in data_frame.iterrows() :
 
-        for _, row in data_frame.iterrows() :
+        language_code = GetThreeLetterLanguageCode( row[ "language_code" ] );
+        text = row[ "text" ];
+        speech_file_path = speech_folder_path + row[ "speech_file_name" ];
 
-            language_code = GetThreeLetterLanguageCode( row[ "language_code" ] );
-            text = row[ "text" ];
-            speech_file_path = speech_folder_path + row[ "speech_file_name" ];
+        print( f"Generated text speech : [{ language_code }] { text }" );
 
-            print( f"Generated text speech : [{ language_code }] { text }" );
+        if os.path.exists( speech_file_path ) :
 
-            if os.path.exists( speech_file_path ) :
+            print( "Keeping speech :", speech_file_path );
 
-                print( "Keeping speech :", speech_file_path );
+        else :
 
-            else :
+            print( "Writing speech :", speech_file_path );
 
-                print( "Writing speech :", speech_file_path );
+            if ( language_code != prior_language_code ) :
 
-                if ( language_code != prior_language_code ) :
+                model = VitsModel.from_pretrained( "facebook/mms-tts-" + language_code );
+                tokenizer = AutoTokenizer.from_pretrained( "facebook/mms-tts-" + language_code );
 
-                    model = VitsModel.from_pretrained( "facebook/mms-tts-" + language_code );
-                    tokenizer = AutoTokenizer.from_pretrained( "facebook/mms-tts-" + language_code );
+                gc.collect();
 
-                    gc.collect();
+            inputs = tokenizer( text, return_tensors = "pt" );
 
-                inputs = tokenizer( text, return_tensors = "pt" );
+            with torch.no_grad() :
 
-                with torch.no_grad() :
+                waveform = model( **inputs ).waveform;
 
-                    waveform = model( **inputs ).waveform;
-
-                scipy.io.wavfile.write(
-                    speech_file_path,
-                    rate = model.config.sampling_rate,
-                    data = waveform.float().numpy()
-                    );
-
-    except Exception as exception :
-
-        print( f"*** { exception }" );
+            scipy.io.wavfile.write(
+                speech_file_path,
+                rate = model.config.sampling_rate,
+                data = waveform.float().numpy()
+                );
 
 ##
 
-def WriteXttsSpeechFiles( data_frame, speech_folder_path ) :
+def GenerateXttsSpeechFiles( data_frame, speech_folder_path ) :
 
-    try :
+    model = TTS( "tts_models/multilingual/multi-dataset/xtts_v2" );
 
-        model = TTS( "tts_models/multilingual/multi-dataset/xtts_v2" );
+    for _, row in data_frame.iterrows() :
 
-        for _, row in data_frame.iterrows() :
+        language_code = row[ "language_code" ];
+        text = row[ "text" ];
+        voice_file_path = row[ "voice_file_path" ];
+        speech_file_path = speech_folder_path + row[ "speech_file_name" ];
 
-            language_code = row[ "language_code" ];
-            text = row[ "text" ];
-            voice_file_path = row[ "voice_file_path" ];
-            speech_file_path = speech_folder_path + row[ "speech_file_name" ];
+        print( f"Generated text speech : [{ language_code }] { text }" );
 
-            print( f"Generated text speech : [{ language_code }] { text }" );
+        if os.path.exists( speech_file_path ) :
 
-            if os.path.exists( speech_file_path ) :
+            print( "Keeping speech :", speech_file_path );
 
-                print( "Keeping speech :", speech_file_path );
+        else :
 
-            else :
+            print( "Writing speech :", speech_file_path );
 
-                print( "Writing speech :", speech_file_path );
-
-                model.tts_to_file(
-                    text = text,
-                    file_path = speech_file_path,
-                    speaker_wav = voice_file_path,
-                    language = GetTwoLetterLanguageCode( language_code ),
-                    split_sentences = True
-                    );
-
-    except Exception as exception :
-
-        print( f"*** { exception }" );
+            model.tts_to_file(
+                text = text,
+                file_path = speech_file_path,
+                speaker_wav = voice_file_path,
+                language = GetTwoLetterLanguageCode( language_code ),
+                split_sentences = True
+                );
 
 ##
 
-def WriteSpeechFiles( data_file_path, speech_folder_path, speech_engine_name, pause_duration ) :
+def GenerateSpeechFiles( data_file_path, speech_folder_path, speech_engine_name, pause_duration ) :
 
     try :
 
@@ -299,15 +281,15 @@ def WriteSpeechFiles( data_file_path, speech_folder_path, speech_engine_name, pa
              or speech_engine_name == "google"
              or speech_engine_name == "google-api" ) :
 
-            WriteApiSpeechFiles( data_frame, speech_folder_path, speech_engine_name, pause_duration );
+            GenerateApiSpeechFiles( data_frame, speech_folder_path, speech_engine_name, pause_duration );
 
         elif ( speech_engine_name == "mms" ) :
 
-            WriteMmsSpeechFiles( data_frame, speech_folder_path );
+            GenerateMmsSpeechFiles( data_frame, speech_folder_path );
 
         elif ( speech_engine_name == "xtts" ) :
 
-            WriteXttsSpeechFiles( data_frame, speech_folder_path );
+            GenerateXttsSpeechFiles( data_frame, speech_folder_path );
 
     except Exception as exception :
 
@@ -318,12 +300,20 @@ def WriteSpeechFiles( data_file_path, speech_folder_path, speech_engine_name, pa
 argument_array = sys.argv;
 argument_count = len( argument_array ) - 1;
 
-if ( argument_count == 4 ) :
+if ( argument_count == 3
+     or argument_count == 4 ) :
 
     data_file_path = GetLogicalPath( argument_array[ 1 ] );
     speech_folder_path = GetLogicalPath( argument_array[ 2 ] );
     speech_engine_name = argument_array[ 3 ];
-    pause_duration = float( argument_array[ 4 ] );
+
+    if argument_count == 4 :
+
+        pause_duration = float( argument_array[ 4 ] );
+
+    else :
+
+        pause_duration = 0;
 
     if ( data_file_path.endswith( ".csv" )
          and speech_folder_path.endswith( "/" )
@@ -333,9 +323,9 @@ if ( argument_count == 4 ) :
                or speech_engine_name == "mms"
                or speech_engine_name == "xtts" ) ) :
 
-        WriteSpeechFiles( data_file_path, speech_folder_path, speech_engine_name, pause_duration );
+        GenerateSpeechFiles( data_file_path, speech_folder_path, speech_engine_name, pause_duration );
 
         sys.exit( 0 );
 
 print( f"*** Invalid arguments : { argument_array }" );
-print( "Usage: python buzz.py data.csv SPEECH_FOLDER/" );
+print( "Usage: python buzz.py data.csv SPEECH_FOLDER/ microsoft|google|google-api|mms|xtts [<pause_duration>]" );
